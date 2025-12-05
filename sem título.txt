@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zencortex</title>
+    <style>
+        /* --- Reset Básico e Configuração do Corpo --- */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* --- Fundo Responsivo (Técnica com <img>) --- */
+        .bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            background-color: #f0f0f0;
+        }
+        #bg-desktop {
+            display: none;
+        }
+        @media (min-width: 768px) {
+            #bg-mobile {
+                display: none;
+            }
+            #bg-desktop {
+                display: block;
+            }
+        }
+
+        /* --- Estilos do Modal --- */
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        #modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #cookie-modal {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            max-width: 500px;
+            width: 90%;
+            box-sizing: border-box;
+            position: relative;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        #modal-overlay.visible #cookie-modal {
+            transform: scale(1);
+        }
+
+        #modal-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #111;
+            margin: 0 0 15px 0;
+            padding-right: 30px;
+        }
+
+        #close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            font-weight: 300;
+            color: #888;
+            cursor: pointer;
+            line-height: 1;
+        }
+        #close-btn:hover {
+            color: #000;
+        }
+
+        #cookie-modal p {
+            margin: 0 0 20px 0;
+            line-height: 1.6;
+            color: #333;
+            font-size: 16px;
+        }
+        #cookie-modal p:last-of-type {
+            margin-bottom: 25px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        @media (min-width: 480px) {
+            .modal-buttons {
+                flex-direction: row;
+                justify-content: flex-end;
+            }
+        }
+
+        .modal-buttons button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        .modal-buttons button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        #accept-btn {
+            background: #007bff;
+            color: #ffffff;
+            order: 1;
+        }
+
+        #refuse-btn {
+            background: #e9e9e9;
+            color: #555555;
+            order: 2;
+        }
+        
+        @media (min-width: 480px) {
+            #accept-btn { order: 2; }
+            #refuse-btn { order: 1; }
+        }
+
+        /* --- Texto Escondido --- */
+        #hidden-text {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            color: #f0f0f0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Fundo Responsivo -->
+    <img decoding="async" id="bg-mobile" class="bg-image" src="https://imgbox.com/DznhfyqH" alt="Imagem de fundo">
+    <img decoding="async" id="bg-desktop" class="bg-image" src="https://imgbox.com/pBpnVAOs" alt="Imagem de fundo">
+
+    <!-- Modal de Cookie -->
+    <div id="modal-overlay">
+        <div id="cookie-modal">
+            <button id="close-btn" aria-label="Fechar aviso">&times;</button>
+            <h2 id="modal-title">Cookie Policy</h2>
+            <p>We use cookies or similar technologies for technical purposes and, with your consent, for other purposes as specified in the cookie policy.</p>
+<p>Use the “Accept” button to consent. Use the “Decline” button or close this notice to continue without accepting.</p>
+            <div class="modal-buttons">
+                <button id="refuse-btn">Refuse</button>
+                <button id="accept-btn">Accept</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const redirectUrl = 'https://zencortex24.com/d/order-now.php#aff=Drovane';
+            const modalDelay = 500;
+            
+            const modalOverlay = document.getElementById('modal-overlay');
+            const acceptBtn = document.getElementById('accept-btn');
+            const refuseBtn = document.getElementById('refuse-btn');
+            const closeBtn = document.getElementById('close-btn');
+
+            function redirectToSite() {
+                window.location.replace(redirectUrl);
+            }
+
+            function showModal() {
+                if (modalOverlay) {
+                    modalOverlay.classList.add('visible');
+                    // trava o scroll da página de fundo enquanto o modal está aberto
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+
+            if (acceptBtn) {
+                acceptBtn.addEventListener('click', redirectToSite);
+            }
+            if (refuseBtn) {
+                refuseBtn.addEventListener('click', redirectToSite);
+            }
+            if (closeBtn) {
+                closeBtn.addEventListener('click', redirectToSite);
+            }
+
+            setTimeout(showModal, modalDelay);
+        });
+    </script>
+
+    <!-- Texto Escondido (SEO/Contexto) -->
+    <div id="hidden-text">
+        <h1>Zencortex</h1>
+        <p>Natural Formula</p>
+<p>Plant Ingredients</p>
+<p>Non-GMO</p>
+<p>Easy To Swallow</p>
+<p>No Stimulants</p>
+<p>Non-Habit Forming</p>
+<p>Inside Every ZenCortex Drop You'll Find:</p>
+<p>Over 20 Carefully-Selected Ingredients That Support Healthy Hearing, Including:</p>
+<p>Grape Seed</p>
+<p>Antioxidants protect the ear</p>
+<p>Green Tea</p>
+<p>Improves blood flow to the ears</p>
+<p>Gymnema Sylvestre</p>
+<p>Supports hearing</p>
+<p>Capsicum Annuum</p>
+<p>Supports healthy inflammation</p>
+<p>Panax Ginseng</p>
+<p>Neuroprotective properties</p>
+<p>Astragalus</p>
+<p>Supports clear sounds</p>
+<p>Chromium Picolinate</p>
+<p>Supports auditory health</p>
+<p>Maca Root</p>
+<p>Boosts Your Energy</p>
+    </div>
+
+</body>
+</html>
